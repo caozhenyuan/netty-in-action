@@ -14,6 +14,9 @@ import io.netty.example.common.ResponseMessage;
 public class OrderServerProcessHandler extends SimpleChannelInboundHandler<RequestMessage> {
     @Override
     protected void channelRead0(ChannelHandlerContext channelHandlerContext, RequestMessage requestMessage) throws Exception {
+        //演示内存泄漏
+//        ByteBuf buffer = channelHandlerContext.alloc().buffer();
+
         Operation operation = requestMessage.getMessageBody();
         OperationResult operationResult = operation.execute();
 

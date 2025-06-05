@@ -5,6 +5,7 @@ import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
 import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.nio.NioChannelOption;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.example.client.codec.OrderFrameDecoder;
 import io.netty.example.client.codec.OrderFrameEncoder;
@@ -31,6 +32,9 @@ public class Client {
 
         bootstrap.group(new NioEventLoopGroup());
 
+        //设置客户端连接超时时间。
+        bootstrap.option(NioChannelOption.CONNECT_TIMEOUT_MILLIS, 10 * 1000);
+
         bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel ch) {
@@ -43,10 +47,14 @@ public class Client {
             }
         });
         //这里是异步的
-        ChannelFuture channelFuture= bootstrap.connect("127.0.0.1",8090);
+        ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 8090);
         channelFuture.sync();
         RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(1001, "todou"));
-        channelFuture.channel().writeAndFlush(requestMessage);
+        //模拟发送10000次
+//        for (int i = 0; i < 10000; i++) {
+            channelFuture.channel().writeAndFlush(requestMessage);
+//        }
+
         channelFuture.channel().closeFuture().get();
     }
 }
