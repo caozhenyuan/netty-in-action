@@ -50,10 +50,10 @@ public class Client {
         ChannelFuture channelFuture = bootstrap.connect("127.0.0.1", 8090);
         channelFuture.sync();
         RequestMessage requestMessage = new RequestMessage(IdUtil.nextId(), new OrderOperation(1001, "todou"));
-        //模拟发送10000次
-//        for (int i = 0; i < 10000; i++) {
+        //模拟发送
+        for (int i = 0; i < 20; i++) {
             channelFuture.channel().writeAndFlush(requestMessage);
-//        }
+        }
 
         channelFuture.channel().closeFuture().get();
     }
