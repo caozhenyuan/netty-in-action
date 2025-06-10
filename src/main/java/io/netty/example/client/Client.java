@@ -11,6 +11,8 @@ import io.netty.example.client.codec.OrderFrameDecoder;
 import io.netty.example.client.codec.OrderFrameEncoder;
 import io.netty.example.client.codec.OrderProtocolDecoder;
 import io.netty.example.client.codec.OrderProtocolEncoder;
+import io.netty.example.client.dispatcher.ClientIdleCheckHandler;
+import io.netty.example.client.dispatcher.KeepaliveHandler;
 import io.netty.example.common.RequestMessage;
 import io.netty.example.common.order.OrderOperation;
 import io.netty.example.util.IdUtil;
@@ -35,14 +37,23 @@ public class Client {
         //设置客户端连接超时时间。
         bootstrap.option(NioChannelOption.CONNECT_TIMEOUT_MILLIS, 10 * 1000);
 
+        KeepaliveHandler keepaliveHandler = new KeepaliveHandler();
+
         bootstrap.handler(new ChannelInitializer<NioSocketChannel>() {
             @Override
             protected void initChannel(NioSocketChannel ch) {
                 ChannelPipeline pipeline = ch.pipeline();
+                //客户端加上 write idle check+keepalive-客户端 5s 不发送数据就发一个 keepalive
+                pipeline.addLast("idleCheck",new ClientIdleCheckHandler());
+
                 pipeline.addLast(new OrderFrameDecoder());
                 pipeline.addLast(new OrderFrameEncoder());
                 pipeline.addLast(new OrderProtocolEncoder());
                 pipeline.addLast(new OrderProtocolDecoder());
+
+                //因为keepalive消息也是需要编解码的，所以放在后面
+                pipeline.addLast("keepalive",keepaliveHandler);
+
                 pipeline.addLast(new LoggingHandler(LogLevel.INFO));
             }
         });

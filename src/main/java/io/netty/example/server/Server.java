@@ -14,6 +14,7 @@ import io.netty.example.server.codec.OrderProtocolDecoder;
 import io.netty.example.server.codec.OrderProtocolEncoder;
 import io.netty.example.server.codec.handler.MetricHandler;
 import io.netty.example.server.codec.handler.OrderServerProcessHandler;
+import io.netty.example.server.codec.handler.ServerIdleCheckHandler;
 import io.netty.handler.flush.FlushConsolidationHandler;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
@@ -57,6 +58,8 @@ public class Server {
                 pipeline.addLast(new LoggingHandler(LogLevel.DEBUG));
                 //流量整形
                 pipeline.addLast("TShaping", globalTrafficShapingHandler);
+                //服务器加上 read idle check-服务器10s 接受不到 channel的请求就断掉连接
+                pipeline.addLast("IdleCheck",new ServerIdleCheckHandler());
 
                 pipeline.addLast("frameDecoder", new OrderFrameDecoder());
                 pipeline.addLast(new OrderFrameEncoder());
